@@ -1,4 +1,6 @@
 # autonomous-snake-agent
+current bugs: rendering bugs, game number isnt updating
+
 ![image](https://github.com/user-attachments/assets/7c703450-41f5-4e8e-b165-8a24226cbff5)
 Part 1: RL Theory
 Reinforcement learning is concerned with how we can teach software agents to behave in an environment, by maximizing the notion of cumulative reward.
