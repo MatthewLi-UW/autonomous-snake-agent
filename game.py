@@ -7,40 +7,43 @@ from enum import Enum
 from collections import namedtuple
 from dataclasses import dataclass
 
-# Initialize core system
+# get pygame ready to use
 pygame.init()
 
-# Game configuration
+# game settings that control how everything looks and behaves
 @dataclass
 class GameConfig:
     CELL_DIMENSION: int = 20
-    FRAME_RATE: int = 60  # Higher framerate for smoother animations
-    STARVATION_FACTOR: int = 100
-    ANIMATION_SPEED: float = 50  # Animation speed factor (lower is smoother but slower)
+    FRAME_RATE: int = 60
+    STARVATION_FACTOR: int = 500
+    ANIMATION_SPEED: float = 10.0  # balance between smooth and responsive
+    ENABLE_ANIMATIONS: bool = True  # toggle for performance
     
-    # Visual configuration
+    # visual settings
     CELL_PADDING: int = 2
     EYE_RADIUS: int = 3
-    FOOD_RADIUS_OUTER: int = 9
-    FOOD_RADIUS_INNER: int = 7
+    FOOD_RADIUS_OUTER: int = 8
+    FOOD_RADIUS_INNER: int = 6
     
-    # Color palette - Enhanced colors
+    # performance options
+    USE_HARDWARE_ACCELERATION: bool = True
+    PRERENDER_SNAKE_SEGMENTS: bool = True
+    
+    # color palette - simplified
     PALETTE = {
-        'background': (20, 70, 20),       # Darker green for base
-        'grid': (30, 90, 30),             # Slightly lighter green for grid
-        'text': (240, 240, 240),          # Almost white for text
-        'text_shadow': (10, 40, 10),      # Dark green for text shadow
-        'viper_head': (70, 210, 150),     # Teal for head
-        'viper_body': (60, 180, 120),     # Slightly darker for body
-        'viper_border': (30, 100, 70),    # Dark outline
-        'apple_fill': (220, 60, 60),      # Brighter red for apple
-        'apple_border': (180, 30, 30),    # Darker red for apple border
-        'apple_stem': (100, 70, 30),      # Brown for apple stem
-        'terrain_detail': (40, 100, 40),  # Light green for grass details
-        'terrain_highlight': (50, 130, 50), # Highlight for grass
+        'background': (20, 70, 20),      # base green
+        'grid': (30, 90, 30),            # lighter green
+        'text': (240, 240, 240),         # off-white
+        'text_shadow': (10, 40, 10),     # dark green
+        'viper_head': (70, 210, 150),    # teal
+        'viper_body': (60, 180, 120),    # slightly darker teal
+        'viper_border': (30, 100, 70),   # dark border
+        'apple_fill': (220, 60, 60),     # bright red
+        'apple_border': (180, 30, 30),   # darker red
+        'apple_stem': (100, 70, 30),     # brown
     }
 
-# Vector handling for movement
+# vector class for handling positions and movement
 class Vector(namedtuple('Vector', 'x, y')):
     def __add__(self, other):
         return Vector(self.x + other.x, self.y + other.y)
@@ -50,15 +53,15 @@ class Vector(namedtuple('Vector', 'x, y')):
             return False
         return self.x == other.x and self.y == other.y
     
-    # Add linear interpolation for smooth animations
+    # smooth movement between two positions
     def lerp(self, other, t):
-        """Linear interpolation between this vector and another"""
+        """smooth transition between positions"""
         return Vector(
             self.x + (other.x - self.x) * t,
             self.y + (other.y - self.y) * t
         )
 
-# Movement directions
+# the four directions the snake can move
 class Orientation(Enum):
     EAST = Vector(1, 0)
     SOUTH = Vector(0, 1)
@@ -69,52 +72,52 @@ class Orientation(Enum):
     def sequence(cls):
         return [cls.EAST, cls.SOUTH, cls.WEST, cls.NORTH]
 
-# Enhanced rendering engine
+# handles all the drawing to make the game look pretty
 class ViperRenderer:
     def __init__(self, width, height):
         self.width = width
         self.height = height
         self.config = GameConfig()
         self.display = pygame.display.set_mode((width, height))
-        pygame.display.set_caption('Viper AI Simulation')
+        pygame.display.set_caption('snake ai')
         self.font = pygame.font.SysFont('arial', 25, True)
         
-        # Load or generate textures
+        # prepare graphics for faster rendering
         self.grass_texture = self._generate_grass_texture()
         self.terrain_base = self._generate_terrain()
         
     def _generate_grass_texture(self):
-        """Generate a natural-looking grass texture"""
-        # Try to load the texture from file if it exists
+        """creates a natural-looking grass pattern"""
+        # try loading existing texture to save time
         if os.path.exists('grass_texture.png'):
             try:
                 return pygame.image.load('grass_texture.png')
             except:
-                pass  # Fall back to generated texture
+                pass  # if loading fails, we'll create a new one
                 
-        # Generate a tiled grass texture
+        # make a new grass texture from scratch
         texture_size = 100
         texture = pygame.Surface((texture_size, texture_size), pygame.SRCALPHA)
         
-        # Base color
+        # start with a solid background
         texture.fill(self.config.PALETTE['background'])
         
-        # Generate random grass blades
+        # add lots of little grass blades
         for _ in range(400):
             x = random.randint(0, texture_size-1)
             y = random.randint(0, texture_size-1)
             
-            # Random grass blade height and width
+            # vary the size of grass blades
             height = random.randint(2, 6)
             width = random.randint(1, 2)
             
-            # Random grass color variation
+            # slightly vary the color for realism
             color_variation = random.randint(-15, 15)
             r = max(0, min(255, self.config.PALETTE['terrain_detail'][0] + color_variation))
             g = max(0, min(255, self.config.PALETTE['terrain_detail'][1] + color_variation))
             b = max(0, min(255, self.config.PALETTE['terrain_detail'][2] + color_variation))
             
-            # Draw grass blade
+            # draw each blade
             pygame.draw.line(
                 texture, 
                 (r, g, b), 
@@ -123,7 +126,7 @@ class ViperRenderer:
                 width
             )
             
-        # Add some highlights
+        # add some light spots to make it look more natural
         for _ in range(100):
             x = random.randint(0, texture_size-1)
             y = random.randint(0, texture_size-1)
@@ -135,15 +138,15 @@ class ViperRenderer:
                 (x, y, size, size)
             )
             
-        # Save for future use
+        # save for next time so we don't have to recreate it
         pygame.image.save(texture, 'grass_texture.png')
         return texture
         
     def _generate_terrain(self):
-        """Generate a pre-rendered terrain surface with grass texture"""
+        """creates the game background with grass and grid lines"""
         surface = pygame.Surface((self.width, self.height))
         
-        # Tile the grass texture to fill the background
+        # cover the whole area with grass texture
         grass_texture = self.grass_texture
         texture_width, texture_height = grass_texture.get_size()
         
@@ -151,14 +154,14 @@ class ViperRenderer:
             for y in range(0, self.height, texture_height):
                 surface.blit(grass_texture, (x, y))
         
-        # Add subtle grid overlay
+        # add faint grid lines so players can see the cells
         for x in range(0, self.width, self.config.CELL_DIMENSION):
             pygame.draw.line(
                 surface, 
                 self.config.PALETTE['grid'], 
                 (x, 0), 
                 (x, self.height),
-                1  # Thinner grid lines
+                1  # thin lines
             )
         for y in range(0, self.height, self.config.CELL_DIMENSION):
             pygame.draw.line(
@@ -166,62 +169,62 @@ class ViperRenderer:
                 self.config.PALETTE['grid'], 
                 (0, y), 
                 (self.width, y),
-                1  # Thinner grid lines
+                1  # thin lines
             )
             
         return surface
         
     def render_frame(self, viper, sustenance, score):
-        """Render a complete frame"""
-        # Base terrain
+        """draws everything for one frame of the game"""
+        # put down the background first
         self.display.blit(self.terrain_base, (0, 0))
         
-        # Render viper body with improved smoothness
+        # then the snake
         self._render_viper(viper)
         
-        # Render food
+        # then the food
         self._render_sustenance(sustenance)
         
-        # Render HUD
+        # finally the score at the top
         self._render_interface(score)
         
-        # Update display
+        # show it all on screen
         pygame.display.flip()
     
     def _render_viper(self, viper):
-        """Render the viper (snake) with all segments rounded"""
+        """draws the snake with all its segments"""
         cfg = self.config
         cell_dim = cfg.CELL_DIMENSION
         pad = cfg.CELL_PADDING
         
-        # Get all segments with interpolation if animating
+        # get positions with animation if enabled
         segments = viper.get_interpolated_segments()
         
-        # Track segment types (for proper rendering)
+        # draw each part of the snake
         for idx, segment in enumerate(segments):
             is_head = (idx == 0)
             is_tail = (idx == len(segments) - 1)
             
-            # Convert grid position to pixel position
+            # convert grid position to screen position
             position = (segment.x * cell_dim, segment.y * cell_dim)
             
-            # Render based on segment type
+            # draw each segment differently
             if is_head:
-                # Render head with eyes
+                # head gets eyes
                 self._render_head(position, cell_dim, viper.orientation, pad)
             elif is_tail:
-                # Render tail (same as body but possibly different color)
+                # tail gets a slightly different look
                 self._render_body_segment(position, cell_dim, pad, is_tail=True)
             else:
-                # Render body segment - all rounded
+                # regular body segment
                 self._render_body_segment(position, cell_dim, pad)
 
     def _render_head(self, position, cell_dim, orientation, pad):
-        """Render the snake's head with rounded shape and eyes"""
-        # Border radius for all segments
+        """draws the snake's head with eyes looking in the right direction"""
+        # rounded corners for smoother look
         border_radius = 8
         
-        # Outer shape (rounded rectangle)
+        # outer border of the head
         pygame.draw.rect(
             self.display,
             self.config.PALETTE['viper_border'],
@@ -229,7 +232,7 @@ class ViperRenderer:
             border_radius=border_radius
         )
         
-        # Inner shape (rounded rectangle)
+        # inner colored part
         inner_rect = pygame.Rect(
             position[0] + pad, 
             position[1] + pad,
@@ -243,20 +246,21 @@ class ViperRenderer:
             border_radius=border_radius-1
         )
         
-        # Eyes based on orientation
+        # add eyes based on which way the snake is facing
         eye_radius = self.config.EYE_RADIUS
         eye_positions = self._calculate_eye_positions(
             position[0], position[1], cell_dim, orientation
         )
         
         for eye_pos in eye_positions:
+            # main eye
             pygame.draw.circle(
                 self.display,
                 self.config.PALETTE['text_shadow'],
                 eye_pos,
                 eye_radius
             )
-            # Add glint to eyes for more life-like appearance
+            # small white glint to make eyes look alive
             glint_pos = (eye_pos[0] - 1, eye_pos[1] - 1)
             pygame.draw.circle(
                 self.display,
@@ -266,11 +270,11 @@ class ViperRenderer:
             )
 
     def _render_body_segment(self, position, cell_dim, pad, is_tail=False):
-        """Render a body segment with rounded corners"""
-        # Border radius for all segments
+        """draws a body segment with rounded corners"""
+        # all segments have rounded corners
         border_radius = 8
         
-        # Outer shape (rounded rectangle)
+        # outer border
         pygame.draw.rect(
             self.display,
             self.config.PALETTE['viper_border'],
@@ -278,7 +282,7 @@ class ViperRenderer:
             border_radius=border_radius
         )
         
-        # Inner shape (rounded rectangle)
+        # inner colored part
         inner_rect = pygame.Rect(
             position[0] + pad, 
             position[1] + pad,
@@ -293,15 +297,15 @@ class ViperRenderer:
         )
     
     def _render_corner(self, position, cell_dim, corner_type, pad):
-        """Corner segments are now just normal rounded body segments"""
+        """corners now look just like regular body segments"""
         self._render_body_segment(position, cell_dim, pad)
     
     def _render_tail(self, position, cell_dim, prev_segment, tail_segment, pad):
-        """Tail is now rendered as a regular body segment"""
+        """tail is just a regular body segment"""
         self._render_body_segment(position, cell_dim, pad, is_tail=True)
     
     def _calculate_eye_positions(self, x, y, size, orientation):
-        """Calculate eye positions based on direction"""
+        """figures out where to put the eyes based on which way the snake is facing"""
         if orientation == Orientation.EAST:
             return [(x + size - 6, y + 5), (x + size - 6, y + size - 9)]
         elif orientation == Orientation.WEST:
@@ -312,14 +316,14 @@ class ViperRenderer:
             return [(x + 5, y + 5), (x + size - 9, y + 5)]
     
     def _render_sustenance(self, sustenance):
-        """Render food item with enhanced appearance"""
+        """draws the food for the snake to eat"""
         cfg = self.config
         cell_dim = cfg.CELL_DIMENSION
         pos_x = sustenance.x * cell_dim
         pos_y = sustenance.y * cell_dim
         center = (pos_x + cell_dim//2, pos_y + cell_dim//2)
         
-        # Shadow for 3D effect
+        # shadow underneath for 3d effect
         shadow_offset = 2
         pygame.draw.circle(
             self.display,
@@ -328,7 +332,7 @@ class ViperRenderer:
             cfg.FOOD_RADIUS_OUTER - 1
         )
         
-        # Outer circle (border)
+        # outer circle (border)
         pygame.draw.circle(
             self.display,
             self.config.PALETTE['apple_border'],
@@ -336,7 +340,7 @@ class ViperRenderer:
             cfg.FOOD_RADIUS_OUTER
         )
         
-        # Inner circle
+        # inner circle (main color)
         pygame.draw.circle(
             self.display,
             self.config.PALETTE['apple_fill'],
@@ -344,23 +348,23 @@ class ViperRenderer:
             cfg.FOOD_RADIUS_INNER
         )
         
-        # Highlight for 3D effect
+        # highlight to make it look shiny
         highlight_pos = (center[0] - 3, center[1] - 3)
         pygame.draw.circle(
             self.display,
-            (255, 180, 180),  # Light red
+            (255, 180, 180),  # light red
             highlight_pos,
             3
         )
         
-        # Stem
+        # stem at the top
         pygame.draw.rect(
             self.display,
             self.config.PALETTE['apple_stem'],
             (pos_x + cell_dim//2 - 1, pos_y + 2, 2, 4)
         )
         
-        # Leaf
+        # little leaf on the side
         leaf_points = [
             (pos_x + cell_dim//2 + 2, pos_y + 3),
             (pos_x + cell_dim//2 + 5, pos_y + 1),
@@ -368,125 +372,125 @@ class ViperRenderer:
         ]
         pygame.draw.polygon(
             self.display,
-            (60, 160, 60),  # Leaf green
+            (60, 160, 60),  # leaf green
             leaf_points
         )
     
     def _render_interface(self, score):
-        """Render score and other UI elements with enhanced appearance"""
-        score_text = f"Score: {score}"
+        """shows the player's score in a nice box"""
+        score_text = f"score: {score}"
         
-        # Background for text
+        # dark background so text is easy to read
         text_width, text_height = self.font.size(score_text)
         bg_rect = pygame.Rect(5, 5, text_width + 10, text_height + 10)
         
-        # Semi-transparent background
+        # semi-transparent background
         bg_surface = pygame.Surface((bg_rect.width, bg_rect.height), pygame.SRCALPHA)
-        bg_surface.fill((0, 0, 0, 128))  # RGBA with alpha for transparency
+        bg_surface.fill((0, 0, 0, 128))  # black with 50% transparency
         self.display.blit(bg_surface, bg_rect)
         
-        # Shadow for better visibility
+        # shadow behind text for better contrast
         shadow = self.font.render(score_text, True, self.config.PALETTE['text_shadow'])
         self.display.blit(shadow, [12, 12])
         
-        # Main text
+        # main text
         text = self.font.render(score_text, True, self.config.PALETTE['text'])
         self.display.blit(text, [10, 10])
 
-# Viper (Snake) state and logic with animation support
+# keeps track of the snake's position and handles movement
 class ViperState:
     def __init__(self, width, height, cell_size):
         self.width = width // cell_size
         self.height = height // cell_size
         self.cell_size = cell_size
-        self.animation_progress = 1.0  # 1.0 means no animation in progress
-        self.prev_segments = []  # Previous segment positions for animation
+        self.animation_progress = 1.0  # 1.0 means animation is complete
+        self.prev_segments = []  # needed for smooth animations
         self.reset()
     
     def reset(self):
-        """Reset viper to initial state"""
+        """puts the snake back to starting position"""
         self.orientation = Orientation.EAST
         
-        # Initial position (middle of screen)
+        # start in middle of screen
         mid_x = self.width // 2
         mid_y = self.height // 2
         
-        # Create initial segments
+        # create a small snake to start
         self.segments = [
-            Vector(mid_x, mid_y),
-            Vector(mid_x - 1, mid_y),
-            Vector(mid_x - 2, mid_y)
+            Vector(mid_x, mid_y),       # head
+            Vector(mid_x - 1, mid_y),   # middle
+            Vector(mid_x - 2, mid_y)    # tail
         ]
         self.prev_segments = self.segments.copy()
         self.animation_progress = 1.0
     
     def update(self, action):
-        """Update viper position based on action"""
-        # Store previous segments for animation
+        """moves the snake based on the chosen direction"""
+        # remember old position for smooth animation
         self.prev_segments = self.segments.copy()
-        self.animation_progress = 0.0  # Start animation
+        self.animation_progress = 0.0  # start new animation
         
-        # Determine new orientation based on action
+        # figure out which way to turn based on action
         # action = [straight, right, left]
         orientations = Orientation.sequence()
         curr_idx = orientations.index(self.orientation)
         
         if np.array_equal(action, [1, 0, 0]):
-            # Continue straight
+            # keep going straight
             new_orientation = orientations[curr_idx]
         elif np.array_equal(action, [0, 1, 0]):
-            # Turn right
+            # turn right
             new_orientation = orientations[(curr_idx + 1) % 4]
         else:  # [0, 0, 1]
-            # Turn left
+            # turn left
             new_orientation = orientations[(curr_idx - 1) % 4]
         
         self.orientation = new_orientation
         
-        # Calculate new head position
+        # move the head forward
         direction = self.orientation.value
         new_head = Vector(
             self.segments[0].x + direction.x,
             self.segments[0].y + direction.y
         )
         
-        # Insert new head
+        # add new head at front of snake
         self.segments.insert(0, new_head)
         
     def truncate(self):
-        """Remove tail segment"""
+        """removes the tail (happens when not eating food)"""
         self.segments.pop()
     
     @property
     def head(self):
-        """Get current head position"""
+        """quick way to get the head position"""
         return self.segments[0]
     
     def check_collision(self):
-        """Check for collision with walls or self"""
+        """sees if the snake hit a wall or itself"""
         head = self.head
         
-        # Wall collision
+        # hit wall?
         if (head.x < 0 or head.x >= self.width or 
             head.y < 0 or head.y >= self.height):
             return True
             
-        # Self collision (check if head collides with any other segment)
+        # hit self?
         if head in self.segments[1:]:
             return True
             
         return False
     
     def get_interpolated_segments(self):
-        """Get segments with animation interpolation"""
+        """creates smooth movement between positions"""
         if self.animation_progress >= 1.0:
             return self.segments
         
-        # If segments lengths don't match, animation isn't possible
+        # can't animate if snake length changed
         if len(self.segments) != len(self.prev_segments):
             return self.segments
             
-        # Interpolate between previous and current positions
+        # blend old and new positions
         interpolated = []
         for i in range(len(self.segments)):
             if i < len(self.prev_segments):
@@ -502,12 +506,12 @@ class ViperState:
         return interpolated
     
     def advance_animation(self, dt, speed_factor):
-        """Progress the movement animation"""
+        """updates how far along the animation is"""
         if self.animation_progress < 1.0:
             self.animation_progress = min(1.0, self.animation_progress + dt * speed_factor)
-        return self.animation_progress >= 1.0  # Return True when animation is complete
+        return self.animation_progress >= 1.0  # true when animation is done
 
-# Main game controller
+# main game logic that ties everything together
 class ViperSimulation:
     def __init__(self, width=640, height=480):
         self.config = GameConfig()
@@ -515,23 +519,23 @@ class ViperSimulation:
         self.height = height
         self.cell_size = self.config.CELL_DIMENSION
         
-        # Initialize components
+        # create all the parts we need
         self.renderer = ViperRenderer(width, height)
         self.viper = ViperState(width, height, self.cell_size)
         self.clock = pygame.time.Clock()
         
-        # Game state
+        # track game state
         self.score = 0
         self.sustenance = None
         self.frame_count = 0
         self.animation_in_progress = False
         self.queued_action = None
         
-        # Initialize food
+        # place first food
         self._spawn_sustenance()
     
     def reset(self):
-        """Reset the game to initial state"""
+        """starts a fresh game"""
         self.viper.reset()
         self.score = 0
         self.frame_count = 0
@@ -541,20 +545,20 @@ class ViperSimulation:
         return self._get_state()
     
     def _spawn_sustenance(self):
-        """Place food at a random valid location"""
+        """places food somewhere the snake isn't"""
         while True:
-            # Generate random position
+            # pick a random spot
             x = random.randint(0, self.viper.width - 1)
             y = random.randint(0, self.viper.height - 1)
             
-            # Check if position is valid (not overlapping with snake)
+            # make sure it's not where the snake is
             new_pos = Vector(x, y)
             if new_pos not in self.viper.segments:
                 self.sustenance = new_pos
                 break
     
     def _get_state(self):
-        """Get current game state for AI"""
+        """packages up the game state for the ai to use"""
         return {
             'viper': self.viper,
             'food': self.sustenance,
@@ -562,90 +566,91 @@ class ViperSimulation:
         }
     
     def step(self, action):
-        """Execute one game step and return results"""
+        """moves the game forward one step"""
         self.frame_count += 1
         
-        # Handle quit events
+        # check if user wants to quit
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
                 
-        # If animation is in progress, continue it
+        # if we're in the middle of animating a move
         if self.animation_in_progress:
-            # Calculate time since last frame for smooth animation
+            # figure out how much time has passed
             dt = 1.0 / self.config.FRAME_RATE
             
-            # Update animation progress
+            # continue the animation
             animation_complete = self.viper.advance_animation(
                 dt, 
                 self.config.ANIMATION_SPEED
             )
             
-            # Render the current animation frame
+            # show current frame
             self.renderer.render_frame(self.viper, self.sustenance, self.score)
             self.clock.tick(self.config.FRAME_RATE)
             
-            # If animation is complete, process the next action if queued
+            # if animation just finished
             if animation_complete:
                 self.animation_in_progress = False
+                # if we have another action waiting, do it now
                 if self.queued_action is not None:
-                    # Process the queued action
                     action = self.queued_action
                     self.queued_action = None
                     return self._process_action(action)
                     
-            # Animation still in progress, no state change
+            # still animating, nothing new happened
             return 0, False, self.score
             
-        # Start processing a new action
+        # process a new move
         return self._process_action(action)
     
     def _process_action(self, action):
-        """Process game logic for an action"""
-        # Update viper position
+        """handles what happens when the snake moves"""
+        # move the snake
         self.viper.update(action)
         self.animation_in_progress = True
         
-        # Check for collisions or timeout
+        # check if something interesting happened
         reward = 0
         game_over = False
         
+        # did we die?
         if self.viper.check_collision() or self.frame_count > self.config.STARVATION_FACTOR * len(self.viper.segments):
             game_over = True
             reward = -10
             self.animation_in_progress = False
             
-            # Render final frame
+            # show final state
             self.renderer.render_frame(self.viper, self.sustenance, self.score)
             self.clock.tick(self.config.FRAME_RATE)
             
             return reward, game_over, self.score
         
-        # Check for food consumption
+        # did we eat?
         if self.viper.head == self.sustenance:
             self.score += 1
             reward = 10
             self._spawn_sustenance()
         else:
-            # Remove tail if no food eaten
+            # if we didn't eat, remove the tail
             self.viper.truncate()
         
-        # Render frame
+        # show what happened
         self.renderer.render_frame(self.viper, self.sustenance, self.score)
         self.clock.tick(self.config.FRAME_RATE)
         
         return reward, game_over, self.score
 
-# For backward compatibility
+# for compatibility with older code
 SnakeGameAI = ViperSimulation
 
-# Example usage for testing:
+# test the game by itself
 if __name__ == "__main__":
     game = ViperSimulation()
     running = True
     while running:
-        # Always go straight for testing
+        # just go straight for testing
         reward, game_over, score = game.step([1, 0, 0])
         if game_over:
             running = False
