@@ -44,3 +44,12 @@ States:
 direction left, direction right, direction up, direction down,
 food left, food right, food up, food down]
 
+**Dev notes**
+
+Set up environment:
+conda create -n pygame_env python=3.7
+conda activate pygame_env
+Install dependencies:
+pip install pygame
+pip3 install torch torchvision
+pip install matplotlib ipython
