@@ -15,8 +15,8 @@ pygame.init()
 class GameConfig:
     CELL_DIMENSION: int = 20
     FRAME_RATE: int = 60
-    STARVATION_FACTOR: int = 500
-    ANIMATION_SPEED: float = 10.0  # balance between smooth and responsive
+    STARVATION_FACTOR: int = 200
+    ANIMATION_SPEED: float = 10  # balance between smooth and responsive
     ENABLE_ANIMATIONS: bool = True  # toggle for performance
     
     # visual settings
