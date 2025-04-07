@@ -6,11 +6,13 @@
 
 ---
 
-This project implements a reinforcement learning system that enables a neural network-based agent to learn and play the classic Snake game. It combines modern RL strategies with neural network architectures, including Dueling DQNs and Prioritized Experience Replay.
+This project implements a reinforcement learning system that enables a neural network-based agent to learn and play the classic Snake game.
 
 ---
 
 https://github.com/user-attachments/assets/def294a4-3a22-4032-b173-3803ec4822a3
+
+![image](https://github.com/user-attachments/assets/77d3bfdf-7e08-4968-96ea-f9b5950d8673)
 
 ---
 
