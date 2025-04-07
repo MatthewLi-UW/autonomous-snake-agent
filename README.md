@@ -1,4 +1,5 @@
 # Autonomous Snake Agent
+
 ---
 
 This project implements a reinforcement learning system that enables a neural network-based agent to learn and play the classic Snake game.
@@ -9,8 +10,9 @@ https://github.com/user-attachments/assets/def294a4-3a22-4032-b173-3803ec4822a3
 
 ![image](https://github.com/user-attachments/assets/77d3bfdf-7e08-4968-96ea-f9b5950d8673)
 
----
 
+---
+How to run it locally? Download the files, start a conda environment and follow the dev notes at the bottom.
 ## Training Loop Overview
 
 ### 1. Initialization
@@ -220,6 +222,11 @@ pip install pygame
 pip3 install torch torchvision
 pip install matplotlib ipython
 pip install pandas
+```
+
+### Run:
+```bash
+python agent.py
 ```
 
 **Current bugs**:  
