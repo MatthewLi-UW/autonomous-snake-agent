@@ -1,4 +1,4 @@
-# 🐍 Autonomous Snake Agent
+# Autonomous Snake Agent
 
 **Current bugs**:  
 - Rendering bugs  
@@ -10,7 +10,7 @@ This project implements a reinforcement learning system that enables a neural ne
 
 ---
 
-## 📽️ Demo
+## Demo
 
 > Add a demo GIF here (e.g. `docs/demo.gif`):
 
@@ -20,7 +20,7 @@ This project implements a reinforcement learning system that enables a neural ne
 
 ---
 
-## 📈 Training Loop Overview
+## Training Loop Overview
 
 ![Training Flowchart](docs/training_flowchart.png)
 
@@ -36,7 +36,7 @@ This project implements a reinforcement learning system that enables a neural ne
 
 ---
 
-## 📊 State, Actions, and Rewards
+## State, Actions, and Rewards
 
 ### Input State (Size = 11)
 ```python
@@ -63,7 +63,7 @@ This project implements a reinforcement learning system that enables a neural ne
 
 ---
 
-## 🧐 Neural Network Architecture
+## Neural Network Architecture
 
 A simple feedforward network maps 11-dimensional input states to 3 possible actions.
 
@@ -105,7 +105,7 @@ class ViperNetwork(nn.Module):
 
 ---
 
-## ♻️ Reinforcement Learning Algorithms
+## Reinforcement Learning Algorithms
 
 ### Deep Q-Learning (DQN)
 Approximates the Q-function using a neural network:
@@ -141,7 +141,7 @@ loss = (weights * elementwise_loss).mean()
 
 ---
 
-## ⚙️ Training Techniques
+## Training Techniques
 
 ### Target Network
 ```python
@@ -165,7 +165,7 @@ for idx, priority in zip(indices, priorities):
 
 ---
 
-## 🔧 Optimization
+## Optimization
 
 ### Optimizer
 ```python
@@ -183,7 +183,7 @@ dones = torch.tensor(np.array(dones), dtype=torch.bool)
 
 ---
 
-## 📀 Model Persistence
+## Model Persistence
 
 ### Checkpointing
 ```python
@@ -199,7 +199,7 @@ torch.save({
 
 ---
 
-## 🛠️ Dev Notes
+## Dev Notes
 
 ### Set up environment:
 ```bash
