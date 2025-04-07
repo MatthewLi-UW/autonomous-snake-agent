@@ -1,8 +1,8 @@
 # Autonomous Snake Agent
 
 **Current bugs**:  
-- Rendering bugs  
-- Game number isn't updating  
+- Plot rendering bugs  
+- Game number isn't updating, may cause issues in game iteration training
 
 ---
 
@@ -12,8 +12,6 @@ This project implements a reinforcement learning system that enables a neural ne
 
 ## Demo
 
-> Add a demo GIF here (e.g. `docs/demo.gif`):
-
 ```
 ![Snake Agent Demo](docs/demo.gif)
 ```
@@ -22,17 +20,35 @@ This project implements a reinforcement learning system that enables a neural ne
 
 ## Training Loop Overview
 
-![Training Flowchart](docs/training_flowchart.png)
+### 1. Initialization
+- Create online and target networks (identical initially)  
+- Initialize prioritized replay buffer  
+- Set hyperparameters (learning rate, discount factor, etc.)  
 
-1. **Observe State** →  
-2. **Select Action** (via Epsilon-Greedy) →  
-3. **Perform Action** in Game →  
-4. **Get Next State and Reward** →  
-5. **Store Transition** in Replay Buffer →  
-6. **Sample Batch** →  
-7. **Compute Target Q-values** →  
-8. **Backpropagate Loss** →  
-9. **Update Target Network Periodically**
+### 2. Experience Collection
+- New experiences are assigned maximum priority  
+- Buffer manages storage with position tracking  
+
+### 3. Batch Sampling
+- Samples are drawn based on `priority^alpha`  
+- Calculates importance sampling weights using beta parameter  
+- Beta increases gradually from 0.4 to 1.0 to reduce bias  
+
+### 4. Double Q-Learning Update
+- Reduces overestimation bias by decoupling action selection and evaluation  
+- Target is calculated: `reward + gamma * next_q_values`  
+
+### 5. Loss Calculation with Importance Sampling
+- Applies weights to correct sampling bias  
+- Performs gradient clipping at 1.0 to prevent exploding gradients  
+
+### 6. Priority Update
+- TD errors become new priorities for future sampling  
+
+### 7. Target Network Synchronization
+- Target network updated every 10 training steps  
+- Provides stable learning targets  
+
 
 ---
 
@@ -66,9 +82,7 @@ This project implements a reinforcement learning system that enables a neural ne
 ## Neural Network Architecture
 
 A simple feedforward network maps 11-dimensional input states to 3 possible actions.
-
-### Model Diagram
-![nn (1)](https://github.com/user-attachments/assets/1cf5d652-e4f8-49e6-b869-671bc9aeb2f9)
+![nn (3)](https://github.com/user-attachments/assets/87948012-4f6b-4e32-9e28-6b9e60a91182)
 
 ### Architecture
 ```python
