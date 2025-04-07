@@ -10,11 +10,7 @@ This project implements a reinforcement learning system that enables a neural ne
 
 ---
 
-## Demo
-
-```
-![Snake Agent Demo](docs/demo.gif)
-```
+https://github.com/user-attachments/assets/def294a4-3a22-4032-b173-3803ec4822a3
 
 ---
 
