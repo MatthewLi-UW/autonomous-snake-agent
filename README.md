@@ -1,9 +1,4 @@
 # Autonomous Snake Agent
-
-**Current bugs**:  
-- Plot rendering bugs  
-- Game number isn't updating, may cause issues in game iteration training
-
 ---
 
 This project implements a reinforcement learning system that enables a neural network-based agent to learn and play the classic Snake game.
@@ -226,3 +221,7 @@ pip3 install torch torchvision
 pip install matplotlib ipython
 pip install pandas
 ```
+
+**Current bugs**:  
+- Plot rendering bugs  
+- Game number isn't updating, may cause issues in game iteration training
