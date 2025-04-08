@@ -232,3 +232,6 @@ python agent.py
 **Current bugs**:  
 - Plot rendering bugs  
 - Game number isn't updating, may cause issues in game iteration training
+
+# Diagram (Courtesy of Gitdiagram)
+![diagram](https://github.com/user-attachments/assets/2a7b6304-a832-48ee-946d-72b6d082ce89)
